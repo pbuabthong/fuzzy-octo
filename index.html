@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Nakhon Ratchasima Household</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 100vh;
+      opacity: 1;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      /* font-family: 'Prompt', sans-serif;*/
+    }
+    .info {
+      padding: 6px 8px;
+      font-family: 'Prompt', sans-serif;
+      background: white;
+      background: rgba(255,255,255,0.8);
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      border-radius: 5px;
+    }
+    .counter {
+        top: 100px;
+        right: 10px;
+        font-size: 24px;
+    }  
+    .info h4 {
+        margin: 0 0 5px;
+        color: #777;
+    }
+    .legend {
+    line-height: 18px;
+    color: #555;
+    }
+    .legend i {
+        width: 18px;
+        height: 18px;
+        float: left;
+        margin-right: 8px;
+        opacity: 0.7;
+    }
+    .list {
+      display: flex;
+      gap: 8px;
+      padding: 16px;
+
+      list-style: none;
+      overflow-x: scroll;
+      scroll-snap-type: x mandatory;
+    }
+
+    .item {
+      flex-shrink: 0;
+      width: 90%;
+      height: 20vh;
+
+      background-color: #FFF;
+
+      scroll-snap-align: center;
+    }
+    
+    .popup-header {
+      font-family: 'Prompt', sans-serif;
+      font-size: 18px;
+    }
+
+    .popup-description {
+      font-family: 'Prompt', sans-serif;
+      font-size: 18px;
+    }
+
+    .sig_number {
+      font-size: 24px;
+      color: #760113;
+    }
+
+    .household-container {
+      /* display: flex; */
+      justify-content: center;
+      align-items: center;
+      height: 250px;
+      width: 200px;
+    }
+
+    .household-img {
+      height: 200px;
+    }
+
+    .content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+
+      /* font-family: sans-serif;
+      font-size: 64px;
+      font-weight: bold; */
+    }
+
+    .control-panel {
+      position: absolute;
+      top: 10px;
+      left: 40px; /* Move it further to the right */
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+    }
+
+    .control-panel button {
+      display: block;
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      border: none;
+      background-color: #919fab; /* Dimmed color */
+      color: white;
+      text-align: left;
+      font-family: 'Prompt', sans-serif;
+      font-size: 18px;
+      cursor: pointer;
+      border-radius: 3px;
+      transition: background-color 0.3s;
+    }
+
+    .control-panel button:hover {
+        background-color: #8b9eb1;
+    }
+
+    .control-panel button.selected {
+        background-color: #4a4e52; /* Selected state color */
+    }
+
+    .slider-container {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        width: 300px;
+    }
+
+    .slider-container input[type="range"] {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    #slider-labels {
+        display: flex;
+        font-family: 'Prompt', sans-serif;
+        justify-content: space-between;
+    }
+
+    #slider-labels span {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 25px;
+      background: #d3d3d3;
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+
+    .slider:hover {
+      opacity: 1;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 25px;
+      height: 25px;
+      background: #4A4E52;
+      cursor: pointer;
+    }
+
+    .slider::-moz-range-thumb {
+      width: 25px;
+      height: 25px;
+      background: #4A4E52;
+      cursor: pointer;
+    }
+
+    .banner {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 900;
+      background: rgba(255, 255, 255, 0.8);
+      padding-left:25px;
+      padding-right:25px;
+      padding-top:5px;
+      padding-bottom:5px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 80%;
+      text-align: center; /* Center text horizontally */
+    }
+
+    .title {
+      font-family: 'Prompt', sans-serif;
+      font-size: 36px;
+      margin: 0; /* Remove default margin of <h1> */
+    }
+
+    .subtitle {
+      font-family: 'Prompt', sans-serif;
+      font-size: 16px;
+    }
+
+    .logos {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .logos img {
+      height: 50px; /* Adjust image size as needed */
+      margin: 5px; /* Adjust spacing between images */
+    }
+  </style>
+</head>
+<body>
+  <div class="banner" id="banner-container">
+    <h1 class="title">ระบบฐานข้อมูลครัวเรือนจังหวัดนครราชสีมา</h1>
+    <div class="subtitle">โดยมหาวิทยาลัยราชภัฏนครราชสีมา</div>
+  </div>
+  <div class="logos">
+    <img src="img/mhesi.png" alt="MHESI Logo">
+    <img src="img/tsri.png" alt="TSRI Logo">
+    <img src="img/pmua.png" alt="PMUA Logo">
+    <img src="img/nrru.png" alt="NRRU Logo">
+  </div>
+  <div id="map"></div>
+  <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-ajax/dist/leaflet.ajax.min.js"></script>
+  <script>
+
+    // Initialize the map
+    var map = L.map('map').setView([14.9799, 102.0977], 9);
+
+    // Add a tile layer to the map (OpenStreetMap tiles)
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    function getColor(d) {
+      return d > 1000 ? '#800026' :
+             d > 500  ? '#BD0026' :
+             d > 200  ? '#E31A1C' :
+             d > 100  ? '#FC4E2A' :
+             d > 50   ? '#FD8D3C' :
+             d > 20   ? '#FEB24C' :
+             d > 10   ? '#FED976' :
+                        '#FFFFCC';
+                        //'#FFEDA0';
+    }
+
+    var districtCounts = {};
+    var totalCount = 0;
+    var markersLayer = new L.LayerGroup().addTo(map);
+    var markersVisible = false;
+    var districtLayer;
+
+    fetch('data/pppconnext66_district_counts.json')
+        .then(response => response.json())
+        .then(data => {
+            districtCounts = data;
+            
+            // Calculate the total sum of counts
+            totalCount = Object.values(districtCounts).reduce((sum, count) => sum + count, 0);
+
+            // Load the GeoJSON and add it to the map
+            districtLayer = new L.GeoJSON.AJAX("nakhon_ratchasima_districts.geojson", {
+                style: style,
+                onEachFeature: onEachFeature
+            }).addTo(map);
+
+            info.update();
+        });
+
+    // Define a function to set the style of the GeoJSON layer
+    function style(feature) {
+      var density = districtCounts[feature.properties.amp_th] || 0;
+      return {
+          fillColor: getColor(density),
+          weight: 2,
+          opacity: 1,
+          color: 'white',
+          dashArray: '3',
+          fillOpacity: 0.8
+      };
+    }
+
+    // Define a function for the onEachFeature option
+    function onEachFeature(feature, layer) {
+      layer.on({
+        mouseover: highlightFeature,
+        mouseout: resetHighlight,
+        click: zoomToFeature
+      });
+    }
+
+    // Define the highlight feature function
+    function highlightFeature(e) {
+      var layer = e.target;
+
+      if (!markersVisible) {
+        layer.setStyle({
+          weight: 3,
+          color: '#555',
+          dashArray: '',
+          fillOpacity: 0.9
+        })
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+
+        };
+
+
+      info.update(layer.feature.properties);
+    }
+
+    // Define the reset highlight function
+    function resetHighlight(e) {
+      districtLayer.resetStyle(e.target);
+      info.update();
+    }
+
+    // Load the GeoJSON and add it to the map
+    // var districtLayer = new L.GeoJSON.AJAX("nakhon_ratchasima_districts.geojson", {
+    //   style: style,
+    //   onEachFeature: onEachFeature
+    // }).addTo(map);
+
+    function zoomToFeature(e) {
+      map.fitBounds(e.target.getBounds());
+      var districtName = e.target.feature.properties.amp_th;
+      showMarkers(districtName);
+    }
+
+    // Zoom back to the original zoom when click anywhere outside of the district
+    map.on('click', function(e) {
+      if (!e.target || !e.target.feature) {
+        map.setView([14.9799, 102.0977], 9);
+      }
+    });
+
+    // Control to display info
+    var info = L.control();
+
+    info.onAdd = function (map) {
+      this._div = L.DomUtil.create('div', 'info counter'); // create a div with a class "info"
+      this.update();
+      return this._div;
+    };
+
+    info.update = function (props) {
+      this._div.innerHTML = '<h4>จำนวนครัวเรือน</h4>' +  (props ?
+          '<b>' + props.amp_th + '</b><br />Count: ' + (districtCounts[props.amp_th] || 0)
+        : 'รวม: ' + totalCount);
+    };
+
+    info.addTo(map);
+
+    var densityButton = L.control({position: 'topleft'});
+    densityButton.onAdd = function (map) {
+      var div = L.DomUtil.create('div', 'control-panel');
+      div.innerHTML = '<button class="selected" onclick="loadDensity(\'data/pppconnext66_district_counts.json\', this)">PPPConnext</button>' +
+              '<button onclick="loadDensity(\'data/tpmap66_district_counts.json\', this)">TPMAP</button>' +
+              '<button onclick="loadDensity(\'data/mso66_district_counts.json\', this)">ครัวเรือนเปราะบาง</button>'+
+              '<button onclick="loadDensity(\'data/tqm66_district_counts.json\', this)">ThaiQM</button>'+
+              '<button onclick="loadDensity(\'data/cddhome66_district_counts.json\', this)">จปฐ. ที่อยู่</button>'+
+              '<button onclick="loadDensity(\'data/cddincome66_district_counts.json\', this)">จปฐ. รายได้</button>';
+      return div;
+    };
+    densityButton.addTo(map);
+
+    // Add another control with snap slider bar
+    var sliderContainer = L.control({ position: 'bottomleft' });
+    sliderContainer.onAdd = function (map) {
+      var container = L.DomUtil.create('div', 'slider-container');
+      container.innerHTML = `
+      <input type="range" id="year-slider" min="2564" max="2566" step="1" value="2566" list="year-ticks" class="slider">
+      <datalist id="year-ticks">
+        <option value="2564"></option>
+        <option value="2565"></option>
+        <option value="2566"></option>
+      </datalist>
+      <div id="slider-labels">
+        <span>2564</span>
+        <span>2565</span>
+        <span>2566</span>
+      </div>
+      `;
+
+      // Add event listener to the slider
+      var slider = container.querySelector('#year-slider');
+      slider.addEventListener('input', function() {
+        // Map the slider value to the corresponding JSON file name
+        var year = this.value;
+        var fileName = `data/pppconnext${year - 2500}_district_counts.json`; // Adjusting for Thai calendar
+        console.log(fileName);
+        loadDensity(fileName);
+      });
+
+      // Prevent map from moving when interacting with the slider
+      L.DomEvent.disableClickPropagation(container);
+      L.DomEvent.disableScrollPropagation(container);
+
+      return container;
+    };
+    sliderContainer.addTo(map);
+
+    
+
+    function loadDensity(file, element = null) {
+      fetch(file)
+      .then(response => response.json())
+      .then(data => {
+        districtCounts = data;
+        totalCount = Object.values(districtCounts).reduce((sum, count) => sum + count, 0);
+        districtLayer.setStyle(style);
+        info.update();
+        map.removeLayer(districtLayer);
+        map.addLayer(districtLayer);
+
+        if (element) {
+          // Remove 'selected' class from all buttons
+          var buttons = document.querySelectorAll('.control-panel button');
+          buttons.forEach(function(btn) {
+              btn.classList.remove('selected');
+          });
+
+          element.classList.add('selected');
+        }
+      })
+      .catch(error => console.error('Error loading the district data:', error));
+    }
+
+    var legend = L.control({position: 'bottomright'});
+
+    legend.onAdd = function (map) {
+
+        var div = L.DomUtil.create('div', 'info legend'),
+            grades = [0, 10, 20, 50, 100, 200, 500, 1000],
+            labels = [];
+
+        // loop through our density intervals and generate a label with a colored square for each interval
+        for (var i = 0; i < grades.length; i++) {
+            div.innerHTML +=
+                '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+        }
+
+        return div;
+    };
+
+    legend.addTo(map);
+
+    var greenIcon = new L.Icon({
+      // iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+      // shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+      iconUrl: 'img/marker-icon-2x-green.png',
+      shadowUrl: 'img/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      shadowSize: [41, 41]
+    });
+
+    // Function to extract image URLs from directory listing HTML
+    function extractImageUrlsFromHtml(html) {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const links = Array.from(doc.querySelectorAll('a[href$=".jpg"]')); // Select all <a> tags ending with .jpg
+      return links.map(link => link.href);
+    }
+
+    function showMarkers(districtName) {
+      markersLayer.clearLayers();
+      markersVisible = true;
+
+      fetch('data/pppconnext66_latlon.json')
+        .then(response => response.json())
+        .then(data => {
+          data.forEach(item => {
+            if (item.districts === districtName) {
+              var marker = L.marker([item.lat, item.lon]).addTo(markersLayer);
+                // marker.bindPopup(`<b>District:</b> ${item.districts}<br><b>Lat:</b> ${item.lat}<br><b>Lon:</b> ${item.lon}<br><img src="data/households_crop/${getRandomImage()}" alt="Random Image">`);
+                marker.bindPopup(`<div class="household-container">` +
+                  `<b>ละติจูด:</b> ${item.lat}<br><b>ลองจิจูด:</b> ${item.lon}<br /><br />` +
+                  `<img class="household-img" src="data/households_crop/${getRandomImage()}"` + 
+                  ` alt="Household Image">` +
+                  `</div>`
+                );
+
+                function getRandomImage() {
+                  const num_img = 18;
+                  const randomIndex = Math.floor(Math.random() * num_img);
+                  return `img_${randomIndex}.jpg`;
+                }
+            }
+          });
+        });
+      if (districtName === 'จักราช') {
+        fetch('3006_centers.json')
+        .then(response => response.json())
+        .then(data => {
+          // Filter data to find matching subdistricts
+          // const centers = data.filter(center => center.tam_th === districtName);
+          const centers = data
+
+          // Add markers for each center found
+          centers.forEach(center => {
+            console.log(center)
+            const marker = L.marker([center.center_y, center.center_x], {icon: greenIcon}).addTo(markersLayer);
+            // Customize the markers as needed
+
+            // Construct popup content dynamically
+            const popupContent = document.createElement('div');
+            popupContent.innerHTML = `
+              <h3 class="popup-header">${center.tam_th}${center.title ? ': ' + center.title : ''}</h3>
+            `;
+            if (center.income_increase) {
+              popupContent.innerHTML += `
+                <p class="popup-description">รายได้เพิ่มขึ้น: <span class="sig_number">${center.income_increase}</span> บาท` +
+                ` <span class="sig_number">(${center.income_percentage}%)</span><br />` +
+                (center.num_household ? 'จำนวน ครัวเรือน: <span class="sig_number">'+center.num_household+'</span>' : '')+
+                `</p>`;
+            }
+            // if (center.tam_code) {
+            if (center.tam_code === '300601' || center.tam_code === '300611'|| center.tam_code === '300610') {
+              popupContent.innerHTML += `<ul class="list">
+                <li class="item"><img class="content" src="data/om/${center.tam_code}/1.jpg"></li>
+                <li class="item"><div class="content"><img class="content" src="data/om/${center.tam_code}/2.jpg"></div></li>
+                <li class="item"><div class="content"><img class="content" src="data/om/${center.tam_code}/3.jpg"></div></li>
+              </ul>`;
+            }
+            marker.bindPopup(popupContent);
+
+
+            // marker.bindPopup(`<b>${center.tam_th}</b><br>Center Coordinates: ${center.center_x}, ${center.center_y}`);
+          });
+        });
+      }
+    }
+
+    // Add zoom event listener to the map
+    map.on('zoomend', function() {
+      console.log(map.getZoom());
+      if (map.getZoom() < 10) {
+        markersLayer.clearLayers(); // Remove markers when zoomed out
+        markersVisible = false;
+        document.getElementById('banner-container').style.display = 'block'; // Show the banner div
+      } else {
+        // console.log('Zoomed in')
+        document.getElementById('banner-container').style.display = 'none'; // Show the banner div
+      }
+    });
+
+    // TODO: 
+    // - เพิ่ม ThaiQM, จปฐ 
+    // - เพิ่มขนาด fonts
+    // - ภาพครัวเรือนสอบทาน //อ.แจ็ค
+    // - เพิ่มภาพกิจกรรม OM จักรราช //แป้ง
+  </script>
+</body>
+</html>

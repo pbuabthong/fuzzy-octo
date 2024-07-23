@@ -1,0 +1,57 @@
+[
+  {
+    "tam_th": "จักราช",
+    "title": "ผักยกแคร่",
+    "income_increase": 3123,
+    "income_percentage": 86,
+    "num_household": 30,
+    "tam_code": "300601",
+    "center_x": 102.43326530948131,
+    "center_y": 15.032673519526208
+  },
+  {
+    "tam_th": "สีสุก",
+    "title": "มะขามป้อม",
+    "income_increase": 1412,
+    "income_percentage": 67,
+    "tam_code": "300604",
+    "center_x": 102.38561144396425,
+    "center_y": 14.873909892021329
+  },
+  {
+    "tam_th": "หนองพลวง",
+    "title": "ปุ๋ยอัดเม็ด",
+    "income_increase": 2225,
+    "income_percentage": 59,
+    "tam_code": "300607",
+    "center_x": 102.39206694317413,
+    "center_y": 15.088246517565581
+  },
+  {
+    "tam_th": "ศรีละกอ",
+    "title": "เห็ดดีมีแฮง",
+    "income_increase": 2526,
+    "income_percentage": 37,
+    "num_household": 33,
+    "tam_code": "300610",
+    "center_x": 102.42644691838477,
+    "center_y": 14.938734239345147
+  },
+  {
+    "tam_th": "คลองเมือง",
+    "title": "ข้าวฮางงอกทอง",
+    "income_increase": 648,
+    "income_percentage": 58,
+    "num_household": 37,
+    "tam_code": "300611",
+    "center_x": 102.50296283983009,
+    "center_y": 14.847312048506595
+  },
+  {
+    "tam_th": "หินโคน",
+    "title": "ผ้าทำมือ",
+    "tam_code": "300613",
+    "center_x": 102.49403198755397,
+    "center_y": 15.00614157109956
+  }
+]

@@ -240,6 +240,66 @@
       height: 50px; /* Adjust image size as needed */
       margin: 5px; /* Adjust spacing between images */
     }
+
+    .household-survey-drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      font-family: 'Prompt', sans-serif;
+      background-color: white;
+      box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease-in-out;
+      z-index: 1000;
+    }
+
+    .household-survey-drawer.closed {
+      transform: translateY(calc(100% - 20px));
+    }
+
+    .household-survey-drawer-tab {
+      height: 20px;
+      background-color: #f0f0f0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .household-survey-drawer-tab .arrow-up,
+    .household-survey-drawer-tab .arrow-down {
+      transition: opacity 0.3s ease-in-out;
+    }
+
+    .household-survey-drawer.closed .arrow-down {
+      display: none;
+    }
+
+    .household-survey-drawer:not(.closed) .arrow-up {
+      display: none;
+    }
+
+    .household-survey-drawer-content {
+      padding: 20px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .household-survey-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .household-survey-table th,
+    .household-survey-table td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+
+    .household-survey-table th {
+      background-color: #f2f2f2;
+    }
   </style>
 </head>
 <body>
@@ -583,11 +643,104 @@
       }
     });
 
+    function toggleDrawer() {
+      const drawer = document.getElementById('householdSurveyDrawer');
+      const arrowUp = drawer.querySelector('.arrow-up');
+      const arrowDown = drawer.querySelector('.arrow-down');
+      
+      drawer.classList.toggle('closed');
+      
+      if (drawer.classList.contains('closed')) {
+        arrowUp.style.display = 'block';
+        arrowDown.style.display = 'none';
+      } else {
+        arrowUp.style.display = 'none';
+        arrowDown.style.display = 'block';
+      }
+    }
+
+    function generateDummyData() {
+      const houseOwners = [
+        "นายทราย ปัทนะ", "นายวิชัย ดวงจันทร์", "นายเหลา ภาษี", "นายประจักษ์ เพชรพิมาย",
+        "นายฝั่น โทศรี", "นางขันทอง อันทินทา", "นางสาวสำ หุ่มไธสง", "นางกลม ปัดเทสัง",
+        "นางสาวอ่อง พรมไพร", "นายคำพันธ์ โฉมศรี", "นางสาวรัตนา สีสมบัติ", "นายบุญมี อันทินทา",
+        "นายชวน ขุนนามวงศ์", "นางสาวสากล ชาไธสง", "นายคำผา ชาสุดสี", "นายไสว วงษ์หนูพะเนา",
+        "นางจอม ตองพันธ์ุ", "นายน้อย แก้วโศก", "นายทวี มังกร", "นางปู่ ดุนกลาง",
+        "นายวิจิตร เจนหนองแวง", "นายบุญนำ ชื่นพิมาย", "นายยัง สุขเจริญ", "นางยุ้น ถอนไธสง"
+      ];
+      const dummyData = [];
+      for (let i = 0; i < 20; i++) {
+        dummyData.push({
+          houseCode: Math.floor(10000000000 + Math.random() * 90000000000),
+          houseNumber: Math.floor(1 + Math.random() * 999),
+          street: `-`,
+          moo: Math.floor(1 + Math.random() * 20),
+          subdistrict: `ขามสะแกแสง`,
+          district: `ขามสะแกแสง`,
+          houseOwner: houseOwners[Math.floor(Math.random() * houseOwners.length)],
+          nationalID: Math.floor(1000000000000 + Math.random() * 9000000000000)
+        });
+      }
+      return dummyData;
+    }
+
+    function populateHouseholdSurveyTable() {
+      const tableBody = document.getElementById('householdSurveyTableBody');
+      const dummyData = generateDummyData();
+
+      dummyData.forEach(item => {
+        const row = document.createElement('tr');
+        Object.values(item).forEach(value => {
+          const cell = document.createElement('td');
+          cell.textContent = value;
+          row.appendChild(cell);
+        });
+        tableBody.appendChild(row);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      populateHouseholdSurveyTable();
+    });
+    // Call this function when the page loads
+    // populateHouseholdSurveyTable();
+
+    
     // TODO: 
     // - เพิ่ม ThaiQM, จปฐ 
     // - เพิ่มขนาด fonts
     // - ภาพครัวเรือนสอบทาน //อ.แจ็ค
     // - เพิ่มภาพกิจกรรม OM จักรราช //แป้ง
   </script>
+  
+  <div class="household-survey-drawer closed" id="householdSurveyDrawer">
+    <div class="household-survey-drawer-tab" onclick="toggleDrawer()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-up">
+        <polyline points="18 15 12 9 6 15"></polyline>
+      </svg>
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="arrow-down" style="display: none;">
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </div>
+    <div class="household-survey-drawer-content">
+      <table class="household-survey-table">
+        <thead>
+          <tr>
+            <th>รหัสบ้าน</th>
+            <th>บ้านเลขที่</th>
+            <th>ถนน</th>
+            <th>หมู่</th>
+            <th>ตำบล</th>
+            <th>อำเภอ</th>
+            <th>เจ้าของบ้าน</th>
+            <th>รหัสประชาชน</th>
+          </tr>
+        </thead>
+        <tbody id="householdSurveyTableBody">
+          <!-- Table rows will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
 </body>
 </html>
